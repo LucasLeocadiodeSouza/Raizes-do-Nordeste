@@ -1,0 +1,250 @@
+<!-- link para download da planilha de exportacao excel -->
+<div style="display: none;">
+  <a #templateDownloadLink></a>
+</div>
+
+<div class="import-export-page">
+    <app-topbar [pageTitle]="'Importar / Exportar'" />
+
+    <div class="page-content">
+        <div class="page-header">
+            <h1>Importar / Exportar Produtos</h1>
+            <p>Gerencie a importação e exportação de planilhas Excel com os dados dos produtos</p>
+        </div>
+
+        <div class="two-col-grid">
+            <div class="card section-card">
+                <div class="section-icon-wrap export-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <h2>Exportar Planilha</h2>
+                <p class="section-desc">Exporte todos os produtos cadastrados no sistema para uma planilha Excel (.xlsx), com filtros opcionais por categoria e status.</p>
+
+                <div class="form-group">
+                    <label for="export-category">Filtrar por Categoria</label>
+                    <select id="export-category" [(ngModel)]="exportCategory">
+                        <option value="">Todas as categorias</option>
+                        @for (cat of categories; track cat.value) {
+                        <option [value]="cat.value">{{ cat.label }}</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="export-status">Filtrar por Status</label>
+                    <select id="export-status" [(ngModel)]="exportStatus">
+                        <option value="">Todos os status</option>
+                        <option value="A">Ativos</option>
+                        <option value="I">Inativos</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary export-btn" (click)="exportExcel()" id="export-btn"
+                    [disabled]="isExporting">
+                    @if (isExporting) {
+                    <span class="spinner"></span>
+                    Exportando...
+                    } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Exportar Excel
+                    }
+                </button>
+
+                @if (exportSuccess) {
+                <div class="success-msg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor"
+                            stroke-width="2" />
+                    </svg>
+                    Planilha exportada com sucesso!
+                </div>
+                }
+            </div>
+
+            <div class="card section-card">
+                <div class="section-icon-wrap import-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <h2>Importar Planilha</h2>
+                <p class="section-desc">Selecione uma planilha Excel (.xlsx ou .xls) para importar produtos em massa. Use o modelo padrão para garantir compatibilidade.</p>
+
+                <div class="template-download">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>Baixe o <a id="template-download-link" (click)="downloadTemplate($event)">modelo de planilha</a> antes de importar</span>
+                </div>
+
+                <div class="info-tooltip-wrap" (click)="showInfoTooltip = !showInfoTooltip; $event.stopPropagation()">
+                    <button class="info-tooltip-trigger" type="button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 16v-4m0-4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Como funciona a importação?</span>
+                    </button>
+                    <div class="info-tooltip-popover" [class.visible]="showInfoTooltip" (click)="$event.stopPropagation()">
+                        <div class="info-tooltip-arrow"></div>
+                        <ul class="info-box-list">
+                            <li>
+                                <strong>Campo ID</strong> — Refere-se ao código do produto no <em>Sistema Raízes do Nordeste</em>.
+                                Se o ID informado já existir no sistema, o produto será <strong>atualizado</strong>.
+                                Caso contrário, um <strong>novo produto</strong> será criado.
+                                <span class="info-highlight">Para adicionar novos produtos, não é necessário preencher o campo ID.</span>
+                            </li>
+                            <li>
+                                <strong>Campo idReferência</strong> — Corresponde ao ID do produto no <em>sistema terceiro</em> (ERP, PDV, etc).
+                                Use este campo para manter o vínculo entre os sistemas.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                @if (importSuccess) {
+                <div class="success-msg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor"
+                            stroke-width="2" />
+                    </svg>
+                    {{ importResultMessage }}
+                </div>
+                }
+
+                <div class="drop-zone" id="drop-zone" [class.drag-over]="isDragging" [class.has-file]="selectedFile" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)" (click)="fileInput.click()">
+                    @if (!selectedFile) {
+                    <div class="drop-content">
+                        <div class="drop-icon">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                              <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <p class="drop-text">Arraste seu arquivo aqui</p>
+                        <span class="drop-subtext">ou clique para selecionar</span>
+                        <span class="drop-formats">Formatos aceitos: .csv, .xlsx, .xls</span>
+                    </div>
+                    } @else {
+                    <div class="file-selected">
+                        <div class="file-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                    stroke="currentColor" stroke-width="1.8" />
+                            </svg>
+                        </div>
+                        <div class="file-info">
+                            <span class="file-name">{{ selectedFile.name }}</span>
+                            <span class="file-size">{{ formatFileSize(selectedFile.size) }}</span>
+                        </div>
+                        <button class="remove-file" (click)="removeFile($event)" id="remove-file-btn" title="Remover">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+                    }
+                </div>
+                <input type="file" #fileInput accept=".xlsx,.xls,.csv" (change)="onFileSelected($event)" style="display:none"
+                    id="file-input">
+
+                @if (importErrors.length > 0) {
+                <div class="import-errors">
+                    <strong>Erros encontrados:</strong>
+                    @for (err of importErrors; track err) {
+                    <div class="error-item">• {{ err }}</div>
+                    }
+                </div>
+                }
+
+                <div class="import-options">
+                    <label class="checkbox-item">
+                        <input type="checkbox" id="overwrite-existing" [(ngModel)]="overwriteExisting" />
+                        <span class="checkmark"></span>
+                        Substituir produtos existentes (por código)
+                    </label>
+                </div>
+
+                <button class="btn btn-primary import-btn" [class.btn-disabled]="!selectedFile" (click)="importExcel()" id="import-btn" [title]="!selectedFile ? 'Clique na caixa encima para selecionar o registro' : 'Importar planilha'"
+                    [disabled]="!selectedFile || isImporting">
+                    @if (isImporting) {
+                    <span class="spinner"></span>
+                    Importando...
+                    } @else {
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Importar Planilha
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (showPreviewModal) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Verificar Importação</h3>
+                <button class="remove-file" (click)="cancelImport()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 15px; color: var(--gray-600); font-size: 14px;">
+                    Mapeie as colunas da sua planilha com os campos do sistema.
+                </p>
+                <div class="preview-table-wrap">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                @for (h of previewHeaders; track h) {
+                                <th>
+                                    <div style="margin-bottom: 6px;">Planilha: <b>{{h}}</b></div>
+                                    <select [(ngModel)]="columnMapping[h]">
+                                        @for (col of availableColumns; track col.value) {
+                                            <option [value]="col.value">{{ col.label }}</option>
+                                        }
+                                    </select>
+                                </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @let limit = previewRows.length > 5 ? 5 : previewRows.length;
+                            @for (row of previewRows | slice:0:limit; track $index) {
+                            <tr>
+                                @for (h of previewHeaders; track h) {
+                                <td>{{ row[h] }}</td>
+                                }
+                            </tr>
+                            }
+                            @if (previewRows.length > 5) {
+                            <tr>
+                                <td [colSpan]="previewHeaders.length" style="text-align: center; color: var(--gray-500); background: var(--gray-50);">
+                                    Mais {{ previewRows.length - 5 }} linha(s) não mostrada(s)
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" (click)="cancelImport()">Cancelar</button>
+                <button class="btn btn-primary" (click)="confirmImport()">Confirmar Importação ({{previewRows.length}} registros)</button>
+            </div>
+        </div>
+    </div>
+    }
+</div>

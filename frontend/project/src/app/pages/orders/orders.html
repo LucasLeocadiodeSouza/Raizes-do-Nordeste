@@ -1,0 +1,519 @@
+<div class="orders-page">
+    <app-topbar [pageTitle]="'Pedidos'" />
+
+    <div class="page-content">
+        <div class="page-header-row">
+            <div class="page-header">
+                <h1>Painel de Pedidos</h1>
+                <p>Acompanhe e gerencie os pedidos recebidos em tempo real</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" (click)="loadOrders()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Atualizar
+                </button>
+
+                <button class="btn btn-primary" id="add-category-btn" (click)="this.showCreateOrderModal.set(true);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    </svg>
+                    Novo Pedido
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <!-- Busca por mesa e pedido -->
+            <div class="filter-search-wrap">
+                <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <input class="filter-input" type="text" placeholder="Buscar por pedido ou mesa..." [ngModel]="filterSearch()" (ngModelChange)="filterSearch.set($event)" />
+            </div>
+
+            <!-- Status -->
+            <div class="filter-status-wrap">
+                <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 4h18M7 8h10M11 12h2M9 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <select class="filter-select" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
+                    <option value="all">Todos os status</option>
+                    <option value="1">Em aberto</option>
+                    <option value="2">Encerrado</option>
+                    <option value="0">Cancelado</option>
+                </select>
+            </div>
+
+            <!-- Periodo -->
+            <div class="filter-period-wrap">
+              <div class="filter-period-1">
+                <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span class="filter-period-label">De</span>
+                <input class="filter-date-input" type="date" [ngModel]="filterDateFrom()" (ngModelChange)="filterDateFrom.set($event); loadOrders()" />
+              </div>
+              <div class="filter-period-2">
+                <span class="filter-period-label">até</span>
+                <input class="filter-date-input" type="date" [ngModel]="filterDateTo()" (ngModelChange)="filterDateTo.set($event); loadOrders()" />
+              </div>
+            </div>
+
+            <div class="filter-results">
+                <span>{{ filteredOrders.length }} pedido(s)</span>
+            </div>
+        </div>
+
+
+        @if (filteredOrders.length === 0) {
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <p>Nenhum pedido encontrado</p>
+            <span>Os pedidos aparecerão aqui quando forem criados.</span>
+        </div>
+        } @else {
+        <div class="orders-grid">
+            @for (order of filteredOrders; track order.id) {
+            <div class="order-card {{ order.colorTheme }}" (click)="openOrderDetails(order)">
+              <div class="order-header">
+                  <div class="modal-title-group">
+                    <span class="order-id">#{{ order.id }}</span>
+
+                    <span class="order-status">{{ order.descEstado }}</span>
+                  </div>
+                  <span class="order-time">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      </svg>
+                      {{ formatTime(order.horario) }}
+                  </span>
+                </div>
+
+                <div class="order-body">
+                    <div class="order-total">
+                        <span class="currency">R$</span>
+                        <span class="amount">{{ order.valorTotal }}</span>
+                    </div>
+
+                    <div class="order-items-preview">
+                        @for (item of order.itens.slice(0, 3); track item.idItem) {
+                        <div class="preview-item">
+                            <span class="bullet">•</span> {{ item.nomeItem }}
+                        </div>
+                        }
+                        @if (order.itens.length > 3) {
+                        <div class="preview-item more">
+                            + {{ order.itens.length - 3 }} item(s)
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="order-footer">
+                    <div class="table-badge">
+                        Mesa {{ order.mesa }}
+                    </div>
+                    @if (order.gorgeta > 0) {
+                    <div class="tip-badge">
+                        + Gorjeta
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>
+
+<!-- Order Details Modal -->
+@if (selectedOrder()) {
+<div class="modal-overlay" (click)="closeOrderDetails()">
+    <div class="modal-box details-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <div class="modal-title-group">
+                <h2>Pedido #{{ selectedOrder()!.id }}</h2>
+                <span class="table-badge-large">Mesa {{ selectedOrder()!.mesa }}</span>
+                <span class="table-badge-large">{{ selectedOrder()!.descEstado }}</span>
+            </div>
+            <button class="modal-close" (click)="closeOrderDetails()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="info-order">
+            <div class="modal-meta-info">
+                <div class="meta-pill">
+                    <span class="meta-label">Atendente:</span>
+                    <span class="meta-value username">{{ selectedOrder()!.ideusu || 'Sistema' }}</span>
+                </div>
+                <div class="meta-pill">
+                    <span class="meta-label">Horário:</span>
+                    <span class="meta-value">{{ formatTime(selectedOrder()!.horario) }}</span>
+                </div>
+            </div>
+
+            <div class="modal-additens-actions">
+                <button class="btn btn-primary" id="add-category-btn" (click)="showItensModal.set(true)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                    </svg>
+                    Adicionar Itens
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <div class="items-list-container">
+                <div class="items-list-header">
+                    <span>Itens do Pedido ({{ selectedOrder()!.itens.length }})</span>
+                    <span>Valor</span>
+                </div>
+                <div class="items-scroll-wrapper" [class.height-grid]="selectedOrder()!.observacao">
+                    <ul class="detailed-items-list">
+                        @for (item of selectedOrder()!.itens; track item.idItem) {
+                        <li class="detailed-item"
+                            [class.item-state-open]="item.estado === 1"
+                            [class.item-state-confirmed]="item.estado === 2"
+                            [class.item-state-delivered]="item.estado === 3"
+                            (click)="openMediaModal(item)" title="Clique para ver imagens">
+
+                            <div class="item-info line-left-part">
+                                <button class="btn-edit-item delete" (click)="askDelete(item); $event.stopPropagation()"
+                                    title="Excluir item">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4h6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </button>
+                                <button class="btn-edit-item" (click)="editItem(item); $event.stopPropagation()"
+                                    title="Alterar item">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+                                @if(isEstadoAbertoItemPedido(item)){
+                                <button class="btn-edit-item btn-state btn-state-open" (click)="confirmarItemPedido(item); $event.stopPropagation()" title="Confirmar preparo">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    </svg>
+                                </button>
+                                }
+                                @else if(isEstadoConfirmadoItemPedido(item)){
+                                <button class="btn-edit-item btn-state btn-state-confirmed" (click)="encerrarItemPedido(item); $event.stopPropagation()" title="Marcar como entregue">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+                                }
+                                @else {
+                                <span class="btn-edit-item btn-state btn-state-delivered" title="Entregue">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                        <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </span>
+                                }
+                                <span class="item-name item-text">{{ item.nomeItem }}</span>
+                            </div>
+                            <div class="item-info">
+                                <span class="item-qty">{{ item.quantidade }}x</span>
+                                <div class="product-price-wrapper">
+                                  @if (item.descontoItem > 0) {
+                                      <span class="price-original">R$ {{ item.valorItem }}</span>
+                                      <span class="item-price">R$ {{ (item.valorItem - item.descontoItem) }}</span>
+                                  } @else {
+                                      <span class="item-price">R$ {{ item.valorItem }}</span>
+                                  }
+                                </div>
+                            </div>
+                        </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            @if (selectedOrder()!.observacao) {
+              @if(showObservacao()){
+              <div class="observation-box" (click)="showObservacao.set(false)" title="clique para ocultar a observação">
+                  <span class="obs-label">Observação:</span>
+                  <p>{{ selectedOrder()!.observacao }}</p>
+              </div>
+              }
+              @else{
+              <div class="observation-box-mini" (click)="showObservacao.set(true)" title="clique para expandir a observação">
+                  <span class="obs-label">Olhar Observação</span>
+              </div>
+              }
+            }
+
+            <div class="summary-box">
+                @if (selectedOrder()!.gorgeta > 0) {
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>R$ {{ getSumValueItens() }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Gorjeta</span>
+                    <span>R$ {{ selectedOrder()!.gorgeta }}</span>
+                </div>
+                }
+                <div class="summary-row grand-total">
+                    <span>Total</span>
+                    <span>R$ {{ getTotalValue() }}</span>
+                </div>
+            </div>
+
+            <div class="estado-actions">
+                @if(temItemConfirmadoOuEntregue() && selectedOrder()!.estado !== 2){ <button class="btn btn-primary" (click)="askAlterarEstadoPedido(2)">Encerrar</button> }
+                @else if(!temItemConfirmadoOuEntregue() && selectedOrder()!.estado !== 0){ <button class="btn btn-primary cancel" (click)="askAlterarEstadoPedido(3)">Cancelar Pedido</button> }
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Image Media Modal (Nested overlay) -->
+@if (selectedItemForMedia()) {
+<div class="modal-overlay nested-overlay" style="z-index: 1100;" (click)="closeMediaModal()">
+    <div class="modal-box media-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header borderless">
+            <h2>{{ selectedItemForMedia()!.nomeItem }}</h2>
+            <button class="modal-close" (click)="closeMediaModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body media-body">
+            @if (itemMediaList().length === 0) {
+            <div class="empty-media">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3" />
+                </svg>
+                <p>Nenhuma imagem disponível para este item.</p>
+            </div>
+            } @else {
+            <div class="media-gallery">
+                @for (media of itemMediaList(); track media.idItem) {
+                <div class="media-item">
+                    <img [src]="media.url" alt="Imagem do Item">
+                </div>
+                }
+            </div>
+            }
+        </div>
+    </div>
+</div>
+}
+
+<!-- adicionar Item ao Pedido -->
+@if (showItensModal()) {
+<div class="modal-overlay nested-overlay" style="z-index: 1100;" (click)="closeItensModal()">
+    <div class="modal-box media-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header borderless">
+            <h2>Itens do Pedido</h2>
+            <div class="header-actions">
+                <button class="modal-close" (click)="closeItensModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-row">
+              <div class="form-row row-with-zoom" style="flex: 2">
+                <div class="form-group">
+                  <label for="user-idItem">Cód<span class="required">*</span></label>
+                  <input id="user-idItem" type="number" [(ngModel)]="formIdItem" (input)="getItemInfo()" placeholder="Ex: 2" [disabled]="isEditModal()?true:false" />
+                </div>
+
+                <div class="form-group" style="justify-content: center;">
+                  <label>&nbsp;</label>
+                  <button type="button" class="zoom-link" (click)="openZoomModal()" [disabled]="isEditModal()?true:false" title="Buscar produto">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                          <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                      </svg>
+                  </button>
+                </div>
+              </div>
+                <div class="form-group" style="flex: 4">
+                    <label for="user-item">Item</label>
+                    <input id="user-item" type="text" class="input-disabled" [(ngModel)]="formItem" disabled />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-descitem">Descrição do Item</label>
+                    <textarea id="user-descitem" class="input-disabled" [(ngModel)]="formDescItem" disabled></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-estoque">Estoque</label>
+                    <input id="user-estoque" type="text" class="input-disabled" [(ngModel)]="formEstoque" placeholder="Ex: 10" disabled />
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-quantity">Quantidade <span class="required">*</span></label>
+                    <input id="user-quantity" type="number" [(ngModel)]="formQuantity" placeholder="Ex: 2" />
+                </div>
+            </div>
+
+              <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-pricetot">Preço Bruto</label>
+                    <input id="user-pricetot" type="text" class="input-disabled" [(ngModel)]="formValor" placeholder="Ex: 30.0" disabled />
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-discount">Desconto</label>
+                    <input id="user-discount" type="text" class="input-disabled" [(ngModel)]="formDiscount" placeholder="Ex: 5.0" disabled />
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-valor">Valor</label>
+                    <input id="user-valor" type="number" [value]="formValor - formDiscount" class="input-disabled" placeholder="Ex: 25.0" disabled />
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="closeItensModal()" id="modal-cancel-btn">Cancelar</button>
+            <button class="btn btn-primary" (click)="isEditModal() ? criarAlterarItemPedido() : incluirItemNoPedido()" id="modal-save-btn">Salvar item</button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Criar pedido -->
+@if(showCreateOrderModal()) {
+<div class="modal-overlay" (click)="closeCreateOrderModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Novo Pedido</h2>
+            <button class="modal-close" (click)="closeCreateOrderModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-mesa">Mesa <span class="required">*</span></label>
+                    <input id="user-mesa" type="number" [(ngModel)]="formMesa" placeholder="Ex: 1" />
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-gorgeta">Gorgeta</label>
+                    <input id="user-gorgeta" type="text" [(ngModel)]="formGorgeta" placeholder="Ex: 10%" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-group">
+                    <label for="user-observacao">Observação</label>
+                    <textarea id="user-observacao" [(ngModel)]="formObservacao"
+                        placeholder="Ex: Quero a Pizza sem cebola"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="closeCreateOrderModal()" id="modal-cancel-btn">Cancelar</button>
+            <button class="btn btn-primary" (click)="criarAlterarPedido()" id="modal-save-btn"> Criar Pedido </button>
+        </div>
+    </div>
+</div>
+}
+
+
+<!-- Confirm Delete -->
+@if (showModalConfirm()) {
+<div class="modal-overlay" id="delete-confirm-overlay" (click)="cancelModalConfirm()">
+    <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Confirmar {{ titleModalConfirm() }}</h2>
+        </div>
+        <div class="modal-body">
+            <p class="delete-warning">{{ textModalConfirm() }}</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="cancelModalConfirm()" id="cancel-delete-btn">Cancelar</button>
+
+            @if(actionModalConfirm() === 1){ <button class="btn btn-primary" (click)="confirmDelete()" id="confirm-delete-btn">Excluir</button> }
+            <!-- @if(actionModalConfirm() === 2){ <button class="btn btn-primary" (click)="encerrarPedido()" id="confirm-delete-btn">Retomar</button> } -->
+            @if(actionModalConfirm() === 3){ <button class="btn btn-primary" (click)="encerrarPedido()" id="confirm-delete-btn">Encerrar</button> }
+            @if(actionModalConfirm() === 4){ <button class="btn btn-primary" (click)="cancelarPedido()" id="confirm-delete-btn">Cancelar</button> }
+        </div>
+    </div>
+</div>
+}
+
+<!-- Zoom: product selector -->
+@if (showZoomModal()) {
+<div class="modal-overlay" style="z-index: 1200;" (click)="closeZoomModal()">
+    <div class="modal-box zoom-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Selecionar Produto</h2>
+            <button class="modal-close" (click)="closeZoomModal()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="zoom-search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <input class="zoom-search-input" type="text" placeholder="Buscar por nome, código ou categoria..." [(ngModel)]="zoomSearch" />
+        </div>
+
+        <div class="zoom-results-info">
+            {{ zoomFilteredProducts.length }} produto(s) encontrado(s)
+        </div>
+
+        <div class="zoom-grid-wrap">
+            @if (zoomFilteredProducts.length === 0) {
+            <div class="zoom-empty">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" opacity="0.3">
+                    <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+                <p>Nenhum produto encontrado.</p>
+            </div>
+            } @else {
+            <div class="zoom-grid">
+                @for (prod of zoomFilteredProducts; track prod.idItem) {
+                <div class="zoom-card" (click)="selectZoomProduct(prod)">
+                    <div class="zoom-card-header">
+                        <span class="zoom-card-code">#{{ prod.idItem }}</span>
+                        <div class="product-price-wrapper">
+                          @if (prod.desconto > 0) {
+                              <span class="price-original">R$ {{ prod.valor }}</span>
+                              <span class="zoom-card-price">R$ {{ prod.valor - prod.desconto }}</span>
+                          } @else {
+                              <span class="zoom-card-price">R$ {{ prod.valor | number:'1.2-2' }}</span>
+                          }
+                        </div>
+                    </div>
+                    <div class="zoom-card-name">{{ prod.nome }}</div>
+                    @if (prod.categoria) {
+                    <div class="zoom-card-category">{{ prod.categoria }}</div>
+                    }
+                    <div class="zoom-card-stock">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        Estoque: {{ prod.estoque }}
+                    </div>
+                </div>
+                }
+            </div>
+            }
+        </div>
+    </div>
+</div>
+}

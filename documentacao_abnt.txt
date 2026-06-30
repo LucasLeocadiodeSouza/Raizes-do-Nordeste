@@ -1,0 +1,581 @@
+================================================================================
+                    MODELO DE DOCUMENTAÇÃO DE SOFTWARE (ABNT)
+                SISTEMA DE GESTÃO DE PEDIDOS - RAÍZES DO NORDESTE
+================================================================================
+
+* INSTRUÇÕES PARA FORMATAÇÃO NO MICROSOFT WORD OU GOOGLE DOCS:
+1. Margens: Superior e Esquerda = 3 cm; Inferior e Direita = 2 cm.
+2. Fonte: Arial ou Times New Roman, cor preta.
+3. Tamanho da Fonte: 12 para o corpo do texto; 14 para títulos de seções; 10 para notas de rodapé, paginação e legendas de figuras.
+4. Espaçamento: 1,5 entre linhas no corpo do texto; espaçamento simples para citações longas e referências.
+5. Alinhamento: Justificado no corpo do texto; títulos das seções alinhados à esquerda; Capa e Folha de Rosto centralizadas.
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+[NOME DA INSTITUIÇÃO DE ENSINO]
+[NOME DO DEPARTAMENTO / FACULDADE]
+[NOME DO CURSO - EX: CURSO DE TECNOLOGIA EM ANÁLISE E DESENVOLVIMENTO DE SISTEMAS]
+[NOME DA DISCIPLINA - EX: PROJETO INTEGRADOR]
+
+
+
+
+
+
+                                 LUCAS [SOBRENOME]
+                                   RU: [SEU RU]
+
+
+
+
+
+
+            SISTEMA RAÍZES DO NORDESTE: GESTÃO E AUTOMAÇÃO DE PEDIDOS
+             RESTAURANTES EM EXPANSÃO E FLUXO DINÂMICO DE ATENDIMENTO
+                     
+                     
+
+
+
+
+
+
+                                [CIDADE - ESTADO]
+                                     [ANO]
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+                                 LUCAS [SOBRENOME]
+                                   RU: [SEU RU]
+
+
+
+
+
+
+            SISTEMA RAÍZES DO NORDESTE: GESTÃO E AUTOMAÇÃO DE PEDIDOS
+             RESTAURANTES EM EXPANSÃO E FLUXO DINÂMICO DE ATENDIMENTO
+                     
+                     
+
+
+
+                                  Trabalho de Conclusão de Curso / Relatório 
+                                  Técnico apresentado como requisito parcial para 
+                                  obtenção de aprovação na disciplina de [NOME 
+                                  DA DISCIPLINA] do curso de [NOME DO CURSO] 
+                                  da [NOME DA INSTITUIÇÃO].
+                                  
+                                  Orientador: Prof. [NOME DO PROFESSOR]
+                                  Polo: [NOME DO POLO]
+
+
+
+
+
+
+                                [CIDADE - ESTADO]
+                                     [ANO]
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+                                   SUMÁRIO
+
+
+1 INTRODUÇÃO ................................................................ 4
+  1.1 Contextualização e Problema ........................................... 4
+  1.2 Objetivos do Sistema .................................................. 4
+  1.3 Atores e Perfis de Usuários ........................................... 5
+
+2 ANÁLISE DE REQUISITOS ...................................................... 6
+  2.1 Requisitos Funcionais (RF) ............................................ 6
+  2.2 Requisitos Não Funcionais (RNF) ....................................... 7
+
+3 ARQUITETURA E MODELAGEM DO SISTEMA ......................................... 8
+  3.1 Arquitetura Geral ..................................................... 8
+  3.2 Controladores REST do Backend ......................................... 8
+  3.3 Layout Responsivo e Front-end ......................................... 9
+  3.4 Persistência de Dados ................................................. 9
+
+4 ENTREGA TÉCNICA E TELAS DO SISTEMA ......................................... 10
+  4.1 Link do Repositório GitHub ............................................ 10
+  4.2 Layouts e Telas do Frontend (Interface) ............................... 10
+  4.3 Endpoints e Controladores do Backend (API REST) ....................... 12
+
+5 CASOS DE USO E FLUXO DE TESTES DE ESTADOS .................................. 13
+  5.1 Solicitação de Pedido via Cardápio Online (Público) .................. 13
+  5.2 Ciclo de Vida do Pedido e Itens ....................................... 13
+  5.3 Regras de Transição e Bloqueio de Cancelamento ........................ 14
+
+6 SOLUÇÃO DE PAGAMENTO INTEGRADO (PROPOSTA) .................................. 15
+  6.1 Fluxo do Pedido Externo com Gateway de Pagamento (QR Code / PIX) ....... 15
+  6.2 Retorno do Webhook da API (Status HTTP 200) ........................... 15
+  6.3 Fluxo de Atendimento Local via Garçom ................................. 16
+
+7 CONCLUSÃO E TRABALHOS FUTUROS .............................................. 17
+
+REFERÊNCIAS .................................................................. 18
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+1 INTRODUÇÃO
+
+1.1 Contextualização e Problema
+O mercado de food service e restaurantes no Brasil tem apresentado forte ritmo 
+de expansão e inovação tecnológica. No entanto, o crescimento acelerado de um 
+estabelecimento comercial traz consigo desafios complexos de gestão operacional. 
+A empresa em questão passa por um processo acentuado de expansão de suas 
+atividades, com a abertura de novas filiais e um volume crescente de clientes. 
+Esse cenário de expansão gera gargalos operacionais críticos, especialmente nos 
+horários de pico de atendimento, nos quais o fluxo de requisições simultâneas de 
+pedidos, consultas ao cardápio e controle de produção na cozinha pode sobrecarregar 
+métodos tradicionais ou sistemas obsoletos de gestão.
+
+A falta de um sistema integrado e escalável resulta em atrasos na transmissão do 
+pedido do cliente para a cozinha, erros humanos no registro de itens, falta de 
+sincronia no inventário de produtos e dificuldades na geração de relatórios 
+estratégicos em tempo real. Há, portanto, a necessidade urgente de uma plataforma 
+robusta que suporte múltiplas conexões simultâneas de clientes e funcionários, 
+garantindo alta disponibilidade, consistência de dados e fluidez no atendimento.
+
+1.2 Objetivos do Sistema
+O objetivo primordial deste projeto é projetar, desenvolver e validar um 
+sistema de automação de pedidos sob medida para a rede de restaurantes "Raízes 
+do Nordeste". O sistema foi concebido para descentralizar o atendimento e 
+agilizar a comunicação interna.
+
+Entre os objetivos específicos destacam-se:
+a) Desenvolver um cardápio online acessível aos clientes via dispositivos móveis, 
+   sem a necessidade de login inicial, permitindo a autogestão de pedidos.
+b) Prover uma interface ágil para os garçons registrarem pedidos diretamente nas 
+   mesas.
+c) Sincronizar instantaneamente os pedidos com a tela de preparo na cozinha.
+d) Controlar o estoque de produtos em tempo real a partir de cada venda ou 
+   importação.
+e) Permitir a administração monitorar estatísticas financeiras e gerenciais 
+   básicas por meio de um painel de controle centralizado.
+
+1.3 Atores e Perfis de Usuários
+O ecossistema do sistema "Raízes do Nordeste" prevê o envolvimento direto dos 
+seguintes atores operacionais:
+* Cliente (Usuário Externo): Acessa a interface pública do cardápio digital por 
+  meio de um QR Code na mesa ou link externo. Consulta itens, visualiza fotos, 
+  preços, descrições e realiza seus próprios pedidos de forma independente.
+* Garçom (Atendente): Responsável pelo atendimento direto ao cliente na mesa. 
+  Realiza pedidos manuais, adiciona itens a pedidos existentes e acompanha o 
+  status dos pratos requisitados.
+* Equipe de Cozinha / Preparo: Visualiza a fila de pedidos recebidos em ordem 
+  de chegada ou prioridade, altera o status de preparação dos itens ("Aberto", 
+  "Aguardando Preparo" e "Entregue") e notifica quando o pedido está pronto.
+* Administrador (Gestor): Detém privilégios completos no sistema. Responsável 
+  pelo cadastro e inativação de produtos e categorias, importação e exportação 
+  de planilhas de produtos via CSV, gestão de usuários e níveis de restrição, e 
+  visualização de relatórios gerenciais e de desempenho do restaurante.
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+2 ANÁLISE DE REQUISITOS
+
+A especificação de requisitos delimita o escopo técnico do sistema, definindo 
+suas funcionalidades (Requisitos Funcionais) e características de qualidade e 
+infraestrutura (Requisitos Não Funcionais).
+
+2.1 Requisitos Funcionais (RF)
+A tabela a seguir descreve os principais Requisitos Funcionais implementados na 
+plataforma:
+
+  ID   | Descrição do Requisito
+=======|========================================================================
+ RF01  | Cadastro e Gestão de Clientes / Usuários: O sistema deve permitir o 
+       | cadastro, edição, ativação e inativação de usuários (administradores,
+       | garçons, cozinha) com diferentes níveis de acesso.
+-------|------------------------------------------------------------------------
+ RF02  | Controle de Níveis de Permissão (Restrições): O administrador deve ser 
+       | capaz de conceder ou revogar permissões de acesso a telas e recursos 
+       | específicos com base no perfil do usuário.
+-------|------------------------------------------------------------------------
+ RF03  | Cadastro e Edição de Categorias: O sistema deve gerenciar categorias de 
+       | produtos contendo nome, ícone associado e cor de identificação visual.
+-------|------------------------------------------------------------------------
+ RF04  | Cadastro e Edição de Itens (Produtos): O sistema deve permitir cadastrar
+       | produtos, vinculando-os a categorias, definindo valores, descontos, 
+       | quantidade em estoque e imagens ilustrativas.
+-------|------------------------------------------------------------------------
+ RF05  | Importação e Exportação em Lote (CSV): O sistema deve disponibilizar a 
+       | importação de produtos a partir de planilhas CSV e exportação dos dados 
+       | cadastrados para arquivo CSV.
+-------|------------------------------------------------------------------------
+ RF06  | Cardápio Digital (Público): O cliente deve acessar de forma pública (sem
+       | autenticação) a relação de itens e categorias ativas para consulta e 
+       | realização de pedidos.
+-------|------------------------------------------------------------------------
+ RF07  | Abertura e Lançamento de Pedidos: O sistema deve permitir que tanto o 
+       | garçom quanto o cliente iniciem um pedido, associando-o a uma mesa.
+-------|------------------------------------------------------------------------
+ RF08  | Gerenciamento do Status do Pedido: O pedido deve trafegar entre os 
+       | estados de Cancelado (0), Aberto (1) e Encerrado (2).
+-------|------------------------------------------------------------------------
+ RF09  | Gerenciamento do Status dos Itens do Pedido: Cada item anexado ao pedido
+       | deve possuir os status: Aberto (1), Aguardando/Preparo (2) e Entregue (3).
+-------|------------------------------------------------------------------------
+ RF10  | Cancelamento Parcial ou Total de Pedidos: O sistema deve permitir o 
+       | cancelamento do pedido ou de itens sob regras específicas de estado 
+       | de preparo (bloqueio caso o prato já esteja em confecção).
+-------|------------------------------------------------------------------------
+ RF11  | Painel de Métricas e Relatórios (Dashboard): A tela inicial do painel
+       | gerencial deve exibir estatísticas atualizadas como total de produtos,
+       | total de pedidos efetuados, faturamento bruto e volume de usuários.
+
+2.2 Requisitos Não Funcionais (RNF)
+Os Requisitos Não Funcionais especificam as propriedades de qualidade do software:
+
+  ID   | Descrição do Requisito
+=======|========================================================================
+ RNF01 | Escalabilidade e Desempenho: O backend do sistema deve ser capaz de 
+       | processar múltiplas requisições simultâneas em horários de pico sem 
+       | degradação perceptível no tempo de resposta (alvo inferior a 500ms).
+-------|------------------------------------------------------------------------
+ RNF02 | Disponibilidade: O sistema deve operar em regime de alta 
+       | disponibilidade, minimizando pontos únicos de falha.
+-------|------------------------------------------------------------------------
+ RNF03 | Segurança e Autenticação: Endpoints administrativos (/restrictedApi/**) 
+       | devem exigir autenticação robusta via tokens JWT (JSON Web Token),
+       | enquanto o endpoint do cardápio público (/api/**) deve ser aberto.
+-------|------------------------------------------------------------------------
+ RNF04 | Design Responsivo: A interface front-end do sistema deve adaptar-se 
+       | de forma fluida a telas de smartphones, tablets e computadores, 
+       | mantendo a legibilidade e usabilidade.
+-------|------------------------------------------------------------------------
+ RNF05 | Persistência de Dados e Transacionalidade: As alterações em pedidos e 
+       | estoques devem ocorrer sob o controle transacional do banco de dados 
+       | para evitar inconsistências em operações concorrentes.
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+3 ARQUITETURA E MODELAGEM DO SISTEMA
+
+A modelagem de um sistema de software descreve as escolhas tecnológicas, a 
+estrutura do banco de dados e os mecanismos que garantem a segurança e a 
+eficiência no processamento de requisições.
+
+3.1 Arquitetura Geral
+O sistema adota o padrão de arquitetura desacoplada em duas camadas principais:
+* Front-end (Camada de Apresentação): Construído em Angular (Vite), oferecendo 
+  uma Single Page Application (SPA) reativa e dinâmica. Utiliza o CSS Vanilla 
+  customizado para garantir a identidade visual nordestina ("Raízes do Nordeste").
+* Back-end (Camada de Lógica de Negócios): Desenvolvido em Java com o framework 
+  Spring Boot. A arquitetura segue as boas práticas do padrão RESTful APIs, 
+  orientada a serviços e repositórios.
+
+A integração entre as camadas ocorre por meio de requisições HTTP e troca de 
+mensagens codificadas em formato JSON, utilizando políticas de CORS controladas 
+para a comunicação segura entre o cliente local (porta 4200) e o servidor (porta 8080).
+
+3.2 Controladores REST do Backend
+A lógica de comunicação HTTP do backend está distribuída em três controladores 
+principais:
+1. AuthApi: Responsável pelo controle de sessões e autenticação. Expõe endpoints 
+   de login, logout e informações do usuário autenticado (/auth/login, 
+   /auth/logout, /auth/me). Gera e valida tokens criptográficos utilizando a 
+   biblioteca Spring Security.
+2. Api: Controlador público e operacional. Não exige token de autenticação para 
+   determinados endpoints, permitindo que os clientes acessem o cardápio e 
+   insiram pedidos diretamente. Gerencia as entidades de Item, Categoria, Pedido 
+   e ferramentas de importação/exportação de dados.
+3. RestrictedApi: Controlador privado restrito a administradores. Exige token 
+   JWT válido no cabeçalho HTTP (Authorization: Bearer [token]). Permite a gestão 
+   de contas de usuários, monitoramento de histórico de atividades e controle de 
+   restrições de telas.
+
+3.3 Layout Responsivo e Front-end
+A interface com o usuário prioriza a experiência mobile, considerando que 
+clientes e garçons utilizam celulares e tablets para realizar pedidos. As telas 
+foram projetadas com grades e layouts flexíveis no CSS, empregando CSS Flexbox e 
+CSS Grid. Os elementos visuais ajustam-se automaticamente, reorganizando menus, 
+botões e imagens de pratos conforme o tamanho do visor.
+
+3.4 Persistência de Dados
+Para garantir a consistência das transações financeiras e operacionais, a camada 
+de persistência é gerenciada pelo Spring Data JPA e Hibernate. A transacionalidade 
+(@Transactional) é declarada nos métodos críticos de manipulação de pedidos e 
+estoque, assegurando que se houver falha no lançamento de qualquer item, a 
+operação seja revertida na sua totalidade (Rollback), evitando inconsistências de 
+estoque ou pedidos incompletos no banco de dados.
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+4 ENTREGA TÉCNICA E TELAS DO SISTEMA
+
+Esta seção apresenta a evidência técnica do software desenvolvido, incluindo a 
+organização dos repositórios de código-fonte, a interface do usuário e a estrutura 
+dos endpoints expostos pelo servidor backend.
+
+4.1 Link do Repositório GitHub
+Para fins de auditoria acadêmica e técnica, o código-fonte unificado do projeto 
+(frontend e backend) encontra-se disponível no repositório público do GitHub 
+descrito a seguir:
+
+Link do Repositório: [INSERIR LINK DO GITHUB AQUI - EX: https://github.com/seu-usuario/raizes-do-nordeste]
+
+4.2 Layouts e Telas do Frontend (Interface)
+Para fins de demonstração visual, a seguir estão os placeholders demarcando onde 
+devem ser inseridas as capturas de tela (screenshots) das principais interfaces 
+operacionais e administrativas do frontend:
+
+A) Tela de Login do Sistema
+Descrição: Interface de acesso restrito a funcionários. Exige credenciais de 
+usuário e senha para autenticação de administradores, garçons e pessoal de cozinha.
+(INSERIR IMAGEM: Tela de Login do Sistema)
+
+B) Dashboard e Painel de Métricas (Home)
+Descrição: Exibe informações financeiras e dados globais sobre o andamento do 
+restaurante, como produtos cadastrados, pedidos totais, faturamento e usuários 
+ativos.
+(INSERIR IMAGEM: Dashboard Home com Gráficos e Indicadores)
+
+C) Tela de Cadastro e Gerenciamento de Produtos
+Descrição: Grid administrativo com ações de criar, editar, ativar/inativar 
+e excluir produtos do cardápio, além de definir quantidades em estoque.
+(INSERIR IMAGEM: Gerenciamento de Produtos e Estoque)
+
+D) Tela de Cadastro e Gerenciamento de Categorias
+Descrição: Permite organizar os produtos por grupos (ex: Bebidas, Entradas, 
+Prato Principal, Sobremesas), com cores e ícones customizados.
+(INSERIR IMAGEM: Gestão de Categorias do Restaurante)
+
+E) Fila de Pedidos e Monitoramento da Cozinha
+Descrição: Painel utilizado pela cozinha para visualizar os pedidos abertos em 
+tempo real e alterar os estados de preparo e entrega de cada prato.
+(INSERIR IMAGEM: Monitoramento de Pedidos e Cozinha)
+
+F) Cardápio Digital do Cliente (Acesso Mobile)
+Descrição: Interface pública acessada pelo cliente na mesa. Permite navegar pelas 
+categorias, buscar pratos, ver valores e montar o próprio carrinho de compras.
+(INSERIR IMAGEM: Cardápio Online Aberto pelo Smartphone)
+
+G) Tela de Gestão de Usuários e Permissões Administrativas
+Descrição: Interface para o administrador cadastrar novos colaboradores e marcar/
+desmarcar restrições de acesso a telas específicas da plataforma.
+(INSERIR IMAGEM: Controle de Permissões de Usuários)
+
+H) Painel de Importação e Exportação (CSV)
+Descrição: Interface para exportar a listagem completa de itens em formato CSV e 
+realizar importação em massa via planilha pré-formatada.
+(INSERIR IMAGEM: Importador e Exportador de Dados em CSV)
+
+4.3 Endpoints e Controladores do Backend (API REST)
+Os endpoints da aplicação estão estruturados em formato RESTful. A seguir, estão 
+os placeholders para inserção de capturas de tela mostrando os códigos 
+dos controladores Java ou diagramas de requisições no Swagger/Postman:
+
+A) Endpoints do AuthApi (Autenticação)
+Endpoints Principais:
+* POST /auth/login (Realiza a autenticação de funcionários e retorna o token JWT)
+* POST /auth/logout (Encerra a sessão do usuário ativo)
+* GET /auth/me (Retorna os dados do usuário autenticado no momento)
+(INSERIR IMAGEM: Controlador REST AuthApi - Código ou Swagger)
+
+B) Endpoints do Api (Público e Operacional)
+Endpoints Principais:
+* GET /api/getItensForCardapio (Retorna itens disponíveis para exibição no cardápio público)
+* POST /api/adapterCriarPedido (Permite a criação de pedidos pelo cardápio público)
+* GET /api/getListPedidos (Recupera a lista de pedidos cadastrados)
+* POST /api/alterarEstadoPedido (Atualiza o status global do pedido)
+* POST /api/alterarEstadoItemPedido (Muda a situação de preparação de um prato específico)
+(INSERIR IMAGEM: Controlador REST Api - Endpoints Gerais)
+
+C) Endpoints do RestrictedApi (Administração)
+Endpoints Principais:
+* GET /restrictedApi/getListUsers (Lista todos os usuários com acesso ao sistema)
+* POST /restrictedApi/criarAlterarUsuario (Cadastro e edição de funcionários)
+* POST /restrictedApi/toggleRestricaoTela (Bloqueia/Desbloqueia acessos do perfil)
+(INSERIR IMAGEM: Controlador REST RestrictedApi - Níveis de Acesso)
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+5 CASOS DE USO E FLUXO DE TESTES DE ESTADOS
+
+A lógica operacional do sistema é baseada em um ciclo de vida rígido dos pedidos 
+e de seus itens constituintes, visando mitigar desperdícios e organizar o fluxo 
+de trabalho da cozinha.
+
+5.1 Solicitação de Pedido via Cardápio Online (Público)
+O ciclo operacional inicia-se quando o cliente, presente na mesa do restaurante, 
+acessa a aplicação cliente (Frontend) sem necessidade de login.
+1. O cliente monta seu pedido adicionando quantidades de produtos.
+2. O frontend despacha uma requisição POST direcionada ao endpoint 
+   `/api/adapterCriarPedido` carregando o JSON com a identificação da mesa, 
+   observações e a lista de itens.
+3. No backend, a classe `PedidoSvc` processa a requisição:
+   - Instancia um novo objeto `Pedido`.
+   - Define o estado inicial do Pedido como `1` (Aberto).
+   - Registra cada item associado ao pedido com o estado inicial `1` (Aberto).
+   - Salva o registro no banco de dados.
+   - O pedido passa a constar instantaneamente na fila da cozinha.
+
+5.2 Ciclo de Vida do Pedido e Itens
+Para gerenciar o fluxo de produção, o sistema mapeia a evolução das entidades:
+
+A) Estados do Pedido (Entidade Pedido):
+* Status 0: Cancelado - O pedido foi descartado (não há faturamento).
+* Status 1: Aberto - O pedido está ativo, itens estão em processo de preparo ou 
+  aguardando atendimento.
+* Status 2: Encerrado - Pedido finalizado com sucesso. Todos os itens foram 
+  entregues ao cliente na mesa e o faturamento foi computado.
+
+B) Estados dos Itens do Pedido (Entidade PedidoItem):
+* Status 1: Aberto - Item inserido no pedido, aguardando confirmação técnica.
+* Status 2: Aguardando (Em Preparo) - O item foi confirmado e está sendo 
+  produzido/preparado pela equipe de cozinha.
+* Status 3: Entregue - O prato/bebida foi finalizado e entregue na mesa.
+
+5.3 Regras de Transição e Bloqueio de Cancelamento
+Para preservar a integridade física e financeira do restaurante (evitar que um 
+prato já cozinhado ou em cozimento seja cancelado sem cobrança), o backend 
+executa validações automáticas no método `alterarEstadoPedido` e 
+`excluiItemPedido`:
+
+1. Regra para Cancelamento do Pedido Completo (Status 0):
+   * O sistema permite a transição do Pedido para "Cancelado" (Status 0) se, e 
+     somente se, NENHUM de seus itens constituintes estiver marcado no status 
+     "Aguardando (Em Preparo)" (Status 2) ou "Entregue" (Status 3).
+   * Se houver pelo menos um item em preparação ou já entregue, o backend bloqueia 
+     o cancelamento direto do pedido, retornando uma exceção de negócio 
+     (`PedidoItemException`).
+
+2. Regra para Cancelamento Parcial (Remoção de Itens - `excluiItemPedido`):
+   * O usuário só pode remover um item do pedido (`excluiItemPedido`) se o estado 
+     atual do item for `1` (Aberto) ou `2` (Aguardando - antes de entrar em preparo 
+     efetivo). 
+   * Itens no estado `3` (Entregue) possuem bloqueio absoluto de exclusão.
+   * Se o item estiver com status `2` (Em preparo) e for necessária a exclusão, a 
+     equipe deve reverter o status do item manualmente para `1` (Aberto) 
+     no painel, assumindo a responsabilidade pela interrupção da produção, para 
+     somente então liberar a deleção ou cancelamento daquele produto.
+
+3. Regra para Encerramento do Pedido (Status 2):
+   * O método `alterarEstadoPedido` bloqueia a transição para "Encerrado" (Status 2) 
+     caso exista qualquer item cujo estado seja diferente de `3` (Entregue). 
+     Essa validação impede o fechamento de contas com pratos ainda pendentes na 
+     cozinha.
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+6 SOLUÇÃO DE PAGAMENTO INTEGRADO (PROPOSTA)
+
+Para elevar o nível de automação e reduzir a necessidade de intervenção humana, 
+propõe-se uma arquitetura de integração com Gateways de Pagamento (ex: Mercado 
+Pago, Asaas, PagSeguro) para pedidos realizados via cardápio online.
+
+6.1 Fluxo do Pedido Externo com Gateway de Pagamento (QR Code / PIX)
+A solução proposta consiste no seguinte fluxo de transação financeira online:
+1. Fechamento da Sacola no Frontend: Ao finalizar a escolha dos itens no cardápio 
+   online, o cliente clica em "Finalizar e Pagar".
+2. Pré-registro de Pedido Pendente: O frontend envia os dados ao backend. O 
+   sistema gera um pedido temporário com status "Aguardando Pagamento".
+3. Geração do QR Code / Código Copia e Cola (PIX): O backend do sistema se 
+   comunica via API REST com o gateway de pagamento parceiro enviando o valor total 
+   da compra. O gateway retorna a chave PIX e a imagem do QR Code correspondente.
+4. Exibição da Interface de Pagamento: O frontend renderiza o QR Code e inicia 
+   um contador de tempo de expiração para o pagamento. O pedido ainda não é 
+   enviado para a fila de preparo da cozinha.
+
+6.2 Retorno do Webhook da API (Status HTTP 200)
+A confirmação do recebimento financeiro ocorre por meio de comunicação assíncrona:
+1. Pagamento Realizado: O cliente escaneia o QR Code e efetua a transferência 
+   PIX no aplicativo bancário.
+2. Callback do Gateway de Pagamento (Webhook): Assim que o banco liquida o PIX, 
+   o servidor do gateway de pagamento dispara uma requisição POST HTTP para a 
+   URL de callback pré-configurada em nosso backend (ex: `/api/pagamentos/webhook`).
+3. Processamento de Webhook no Backend: 
+   - A API recebe os dados da transação.
+   - O backend valida a assinatura da requisição para atestar a segurança.
+   - O backend consulta o status da transação. Confirmado o pagamento, a API 
+     retorna o status HTTP 200 (OK) para o gateway.
+4. Lançamento Automático do Pedido na Cozinha: Com a confirmação da transação 
+   financeira aprovada, o sistema altera automaticamente o status do pedido para 
+   `1` (Aberto - Pronto para Preparo) e inicia o fluxo de sincronização com a 
+   cozinha. Caso o pagamento expire sem retorno, o pedido temporário é descartado.
+
+6.3 Fluxo de Atendimento Local via Garçom
+Para preservar a flexibilidade no atendimento físico tradicional, os pedidos 
+criados de forma presencial pelos garçons seguem um fluxo diferenciado:
+* Entrada Direta: O garçom lança o pedido diretamente pelo aplicativo móvel. Esse 
+  pedido não passa por travas de pré-pagamento digital, sendo inserido de imediato 
+  no status `1` (Aberto) na fila da cozinha.
+* Pagamento Posterior (Fechamento de Conta): O cliente consome os pratos e, ao 
+  final, solicita a conta ao garçom. O garçom solicita o encerramento do pedido, 
+  imprime ou exibe o extrato na tela, realiza a cobrança por meios tradicionais 
+  (máquina de cartão física, dinheiro) e finaliza o pedido manualmente no 
+  sistema (alterando o estado global do Pedido para 2 - Encerrado).
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+7 CONCLUSÃO E TRABALHOS FUTUROS
+
+O desenvolvimento do sistema de gestão e automação de pedidos "Raízes do Nordeste" 
+demonstrou a viabilidade técnica e prática da modernização de processos em 
+restaurantes em fase de expansão. A separação clara entre as responsabilidades 
+do front-end e do back-end viabilizou uma interface de alto desempenho e uma API 
+estável, capaz de lidar com picos de tráfego concorrente por meio da estruturação 
+de rotas otimizadas e controles transacionais robustos.
+
+A implementação prática do fluxo de pedidos e seus controles de status (Aberto, 
+Em Preparo, Entregue e Cancelado) atendeu satisfatoriamente aos requisitos de 
+gestão, evitando retrabalhos de cozinha causados por cancelamentos indevidos 
+e permitindo um acompanhamento fidedigno do andamento das mesas.
+
+Como trabalhos futuros, propõe-se:
+* Desenvolvimento e homologação completa da API de pagamento com suporte a 
+  QR Code PIX dinâmico integrado diretamente no cardápio online do cliente, 
+  conforme especificado na modelagem de solução.
+* Implementação de um módulo avançado de inteligência de negócios (Business 
+  Intelligence) com a plotagem de gráficos complexos de pratos mais vendidos por 
+  período, previsão de demanda de estoque e curvas de faturamento mensal.
+* Integração com impressoras térmicas de cupom fiscal via protocolo ESC/POS 
+  para impressão automática de comandos de preparo diretamente na cozinha.
+* Desenvolvimento de um aplicativo móvel nativo (PWA - Progressive Web App) 
+  para melhorar o desempenho do painel do garçom offline em caso de oscilações 
+  na rede Wi-Fi local.
+
+--------------------------------------------------------------------------------
+--- QUEBRA DE PÁGINA (ABNT) ---
+--------------------------------------------------------------------------------
+
+REFERÊNCIAS
+
+ALVES, Sandra. Engenharia de Software: Fundamentos, Métodos e Padrões. 3. ed. 
+São Paulo: Novatec, 2021.
+
+ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. ABNT NBR 14724: Informação e 
+documentação: Trabalhos acadêmicos: Apresentação. Rio de Janeiro: ABNT, 2011.
+
+GONÇALVES, Eduardo. Desenvolvimento Web Moderno com Angular e Spring Boot. 
+Rio de Janeiro: Alta Books, 2022.
+
+SOMMERVILLE, Ian. Engenharia de Software. 10. ed. São Paulo: Pearson Education 
+do Brasil, 2018.
+
+SPRING FRAMEWORK. Spring Security Documentation. Disponível em: 
+<https://spring.io/projects/spring-security>. Acesso em: 30 jun. 2026.
+================================================================================

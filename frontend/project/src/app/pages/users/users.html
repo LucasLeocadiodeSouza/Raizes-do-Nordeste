@@ -1,0 +1,287 @@
+<div class="users-page">
+    <app-topbar [pageTitle]="'Usuários'" />
+
+    <div class="page-content">
+        <div class="page-header-row">
+            <div class="page-header">
+                <h1>Gerenciamento de Usuários</h1>
+                <p>Administre os usuários e permissões de acesso ao sistema</p>
+            </div>
+            <button class="btn btn-primary" id="add-user-btn" (click)="openAddUserModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" />
+                </svg>
+                Novo Usuário
+            </button>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-strip">
+            <div class="stat-pill">
+                <span class="stat-pill-value">{{ userCount }}</span>
+                <span class="stat-pill-label">Total de Usuários</span>
+            </div>
+            <div class="stat-pill stat-pill-green">
+                <span class="stat-pill-value">{{ activeCount }}</span>
+                <span class="stat-pill-label">Ativos</span>
+            </div>
+            <div class="stat-pill stat-pill-gray">
+                <span class="stat-pill-value">{{ inactiveCount }}</span>
+                <span class="stat-pill-label">Inativos</span>
+            </div>
+            <div class="stat-pill stat-pill-blue">
+                <span class="stat-pill-value">{{ totAdmins }}</span>
+                <span class="stat-pill-label">Administradores</span>
+            </div>
+        </div>
+
+        <!-- Users Table Card -->
+        <div class="card table-card">
+            <div class="table-toolbar">
+                <div class="search-filter">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" />
+                        <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <input type="search" id="user-search" placeholder="Buscar usuário por nome ou e-mail..."
+                        [(ngModel)]="searchQuery" (input)="filterUsers()" />
+                </div>
+                <div class="toolbar-filters">
+                    <select id="role-filter" [(ngModel)]="selectedRole" (change)="filterUsers()">
+                        <option value="0">Todos os perfis</option>
+                        @for (role of roles; track role.value) {
+                        <option [value]="role.value">{{ role.label }}</option>
+                        }
+                    </select>
+                    <select id="user-status-filter" [(ngModel)]="selectedStatus" (change)="filterUsers()">
+                        <option value="">Todos os status</option>
+                        <option value="ativo">Ativo</option>
+                        <option value="inativo">Inativo</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="data-table" id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>E-mail</th>
+                            <th>Perfil</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (user of filteredUsers; track user.id) {
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar" [style.background]="user.avatarColor">
+                                        {{ user.initials }}
+                                    </div>
+                                    <div>
+                                        <div class="user-name">{{ user.name }}</div>
+                                        <div class="user-since">Desde {{ user.since }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="email-cell">{{ user.email }}</td>
+                            <td>
+                                <span class="role-badge" [style.backgroundColor]="getCor(user.id)">
+                                    {{ user.roleDesc }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge" [class.badge-green]="user.status === 'ativo'"
+                                    [class.badge-red]="user.status === 'inativo'">
+                                    {{ user.status === 'ativo' ? '● Ativo' : '● Inativo' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="action-btn edit" [id]="'edit-user-' + user.id" title="Editar"
+                                        (click)="editUser(user)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn" [id]="'toggle-user-' + user.id" [class.view]="user.status === 'inativo'" [class.delete]="user.status === 'ativo'" [title]="user.status === 'ativo' ? 'Desativar' : 'Ativar'" (click)="ativarInativarUsuario(user.id, user.status !== 'ativo')">
+                                        @if (user.status === 'ativo') {
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                            <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        </svg>
+                                        } @else {
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" />
+                                        </svg>
+                                        }
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        }
+                        @if (filteredUsers.length === 0) {
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <div class="empty-icon">👤</div>
+                                <p>Nenhum usuário encontrado</p>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card permissions-card">
+            <div class="card-header">
+                <h3>Matriz de Permissões por Perfil</h3>
+                @if (isAdmin) {
+                <span class="badge badge-green">Editável</span>
+                } @else {
+                <span class="badge badge-blue">Somente leitura</span>
+                }
+            </div>
+            <div class="permissions-table-wrap">
+                <table class="permissions-table">
+                    <thead>
+                        <tr>
+                            <th>Permissão</th>
+                            @for (role of roles; track role.value) {
+                            <th>{{ role.label }}</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (perm of permissions; track perm.name) {
+                        <tr>
+                            <td class="perm-name">{{ perm.name }}</td>
+                            @for (role of roles; track role.value) {
+                            <td class="perm-cell" [class.perm-cell-clickable]="isAdmin" (click)="togglePermissao(perm.id, role.value, role.label)">
+                                @if (perm.roles.includes(role.label)) {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="check-icon">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#d1fae5"
+                                        stroke="#059669" stroke-width="1.5" />
+                                </svg>
+                                } @else {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="cross-icon">
+                                    <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        fill="#fee2e2" stroke="#ef4444" stroke-width="1.5" />
+                                </svg>
+                                }
+                            </td>
+                            }
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card permissions-card">
+            <div class="card-header">
+                <h3>Matriz de Restrições de Tela por Perfil</h3>
+                @if (isAdmin) {
+                <span class="badge badge-green">Editável</span>
+                } @else {
+                <span class="badge badge-blue">Telas bloqueadas por perfil</span>
+                }
+            </div>
+            <div class="permissions-table-wrap">
+                @if (telas.length === 0) {
+                <div class="empty-state" style="padding: 40px 20px;">
+                    <div class="empty-icon">🖥️</div>
+                    <p>Nenhuma restrição de tela cadastrada</p>
+                </div>
+                } @else {
+                <table class="permissions-table">
+                    <thead>
+                        <tr>
+                            <th>Perfil</th>
+                            @for (tela of telas; track tela.value) {
+                            <th>{{ tela.label }}</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (rest of restricoes; track rest.idPerfil) {
+                        <tr>
+                            <td class="perm-name">{{ rest.name }}</td>
+                            @for (tela of telas; track tela.value) {
+                            <td class="perm-cell" [class.perm-cell-clickable]="isAdmin" (click)="toggleRestricaoTela(rest.idPerfil, tela.value)">
+                                @if (rest.telas.includes(tela.value)) {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="cross-icon">
+                                    <path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        fill="#fee2e2" stroke="#ef4444" stroke-width="1.5" />
+                                </svg>
+                                } @else {
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="check-icon">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" fill="#d1fae5"
+                                        stroke="#059669" stroke-width="1.5" />
+                                </svg>
+                                }
+                            </td>
+                            }
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                }
+            </div>
+        </div>
+
+</div>
+
+@if (showModal()) {
+<div class="modal-overlay" id="user-modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ editingUser() ? 'Editar Usuário' : 'Novo Usuário' }}</h2>
+            <button class="modal-close" (click)="closeModal()" id="modal-close-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label for="user-name">Nome Completo <span class="required">*</span></label>
+                    <input id="user-name" type="text" [(ngModel)]="formName" placeholder="Ex: João da Silva" />
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label for="user-phone">Telefone</label>
+                    <input id="user-phone" type="text" [(ngModel)]="formPhone" placeholder="(00) 00000-0000" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="user-email">E-mail <span class="required">*</span></label>
+                    <input id="user-email" type="email" [(ngModel)]="formEmail" placeholder="joao@exemplo.com" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                    <label for="user-role">Perfil de Acesso <span class="required">*</span></label>
+                    <select id="user-role" class="form-select" [(ngModel)]="formRoleId">
+                        <option value="0" disabled>Selecione um perfil</option>
+                        @for (role of roles; track role.value) {
+                        <option [value]="role.value">{{ role.label }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="closeModal()" id="modal-cancel-btn">Cancelar</button>
+            <button class="btn btn-primary" (click)="criarAlterarUsuario()" id="modal-save-btn">
+                {{ editingUser() ? 'Salvar Alterações' : 'Criar Usuário' }}
+            </button>
+        </div>
+    </div>
+</div>
+}
